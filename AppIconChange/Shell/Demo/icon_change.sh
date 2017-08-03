@@ -6,7 +6,7 @@ VersionNumber=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$
 echo Version: $VersionNumber
 cfBundleIdentifier=${PRODUCT_BUNDLE_IDENTIFIER}
 echo BundleIdentifier: $cfBundleIdentifier
-DateString=$(date +%Y-%m-%d:%H:%M) # 2017-08-03:15:23
+DateString=$(date +%m-%d:%H:%M) # 2017-08-03:15:23
 echo Date: $DateString
 IFS=$'\n'
 
@@ -21,10 +21,15 @@ function generateIcon () {
     echo PROJECT_IMAGE_PATH: $PROJECT_IMAGE_PATH
     
     WIDTH=$(identify -format %w ${PROJECT_IMAGE_PATH}) # 获取
-    FONT_SIZE=$(echo "$WIDTH * .1" | bc -l)
-    
+    FONT_SIZE=$(echo "$WIDTH * .12" | bc -l)
+
     convert beta.png -resize $WIDTHx$WIDTH resizedBeta.png
-    convert resizedBeta.png -fill white -font AndaleMono -pointsize ${FONT_SIZE} -gravity south \
+    convert alphaBack.png -resize $WIDTHx$(echo $WIDTH * 0.5) resizedBack.png
+
+    convert -background '#0008' -fill white -gravity center -size $WIDTHx$WIDTH caption:"" alphaBack.png
+    composite alphaBack.png -gravity south resizedBeta.png resizedBeta.png
+
+    convert resizedBeta.png -fill white -pointsize ${FONT_SIZE} -gravity south \
     -annotate 0 "$DateString\nversion:$VersionNumber\nbuild:$BuildNumber" resizedBeta.png
     convert ${PROJECT_IMAGE_PATH} - | composite resizedBeta.png - ${TARGET_PATH}
     
@@ -37,6 +42,8 @@ if [ "$cfBundleIdentifier" != "cn.autopai.violationquery" ]; then
     echo "不需要运行脚本,需要有homebrew及homebrew子安装包imagemagick、ghostscript缺一不可"
         else
     echo "bundleID: $cfBundleIdentifier 开始修改icon"
+        convert -background '#0009' -fill white -gravity center -size 400x400 caption:"" alphaBack.png
+
         generateIcon "app_icon_60@2x.png" "AppIcon60x60@2x.png" 
         generateIcon "app_icon_60@3x.png" "AppIcon60x60@3x.png"
         echo "bundleID: $cfBundleIdentifier 结束修改icon"
