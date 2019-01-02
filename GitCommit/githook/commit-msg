@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby -w
+#
+# An example hook script to check the commit log message.
+# Called by "git commit" with one argument, the name of the file
+# that has the commit message.  The hook should exit with non-zero
+# status after issuing an appropriate message if it wants to stop the
+# commit.  The hook is allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "commit-msg".
+
+# Uncomment the below to add a Signed-off-by line to the message.
+# Doing this in a hook is a bad idea in general, but the prepare-commit-msg
+# hook is more suited to it.
+#
+# SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
+
+# This example catches duplicate Signed-off-by lines.
+
+commit_msg = File.read(ARGV.first)
+prefixes = %w[fix feat test doc refactor]
+if (prefixes.any? {|pre| commit_msg.start_with?("#{pre}:") || commit_msg.start_with?("Merge branch") || commit_msg.start_with?("Revert")})
+  puts "Valid"
+else
+  puts "不规范的commit, 请以 feat: fix: doc: refactor: test: 开头4种提交,更多详细内容查阅我们的commit规范，path = git_repo/scripts/githook/QTCommitGuide.md"
+  exit(1)
+end
+
+# echo "commit-msg: "
+# echo $1
+# exit 1
